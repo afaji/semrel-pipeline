@@ -12,21 +12,22 @@ def get_or_assign_id(item):
 
 def process_label_studio_annotations(df):
   # select the required columns
+  print(df)
   try:
-    df = df[['pair1a', 'pair1b', 'pair2a', 'pair2b', 'pair3a', 'pair3b', 'pair4a', 'pair4b', 'best-pair', 'worst-pair']]
+    df = df[['pair1a', 'pair1b', 'pair2a', 'pair2b', 'pair3a', 'pair3b', 'pair4a', 'pair4b', 'best_pair_choices', 'worst_pair_choices']]
   except:
     sys.exit('Could not find the required columns in the input file. Please check the file format.')
-
+  df = df.dropna()
   # merge the columns to form item pairs
   new_data = {
       'A': df['pair1a'] + '\\n' + df['pair1b'],
       'B': df['pair2a'] + '\\n' + df['pair2b'],
       'C': df['pair3a'] + '\\n' + df['pair3b'],
       'D': df['pair4a'] + '\\n' + df['pair4b'],
-      'best-pair': df['best-pair'],
-      'worst-pair': df['worst-pair']
+      'best-pair': df['best_pair_choices'].str[-1].apply(int),
+      'worst-pair': df['worst_pair_choices'].str[-1].apply(int)
   }
-
+  print(new_data)
   # create a new dataframe with the merged columns
   return pd.DataFrame(new_data)
   
@@ -67,12 +68,14 @@ else:
 print('Data size before preprocessing:', len(df))
 
 df = df.dropna()
-df = df[~df.apply(lambda row: row.str.contains('-')).any(axis=1)]
+#df = df[~df.apply(lambda row: row.str.contains('-')).any(axis=1)]
 print('Data size after preprocessing:', len(df))
 
+print(df)
 # replace the best-pair and worst-pair labels with the actual item pairs
-df['best-pair'] = df.apply(lambda row: row[row['best-pair']], axis=1)
-df['worst-pair'] = df.apply(lambda row: row[row['worst-pair']], axis=1)
+df['best-pair'] = df.apply(lambda row: row[row['best-pair'] - 1], axis=1)
+df['worst-pair'] = df.apply(lambda row: row[row['worst-pair'] - 1], axis=1)
+
 
 # rename the columns to Item1, Item2, Item3, Item4, BestItem, WorstItem
 new_names = {'A': 'Item1',
@@ -82,7 +85,7 @@ new_names = {'A': 'Item1',
              'best-pair': 'BestItem',
              'worst-pair': 'WorstItem'}
 df = df.rename(columns=new_names)
-
+print(df['BestItem'])
 # create a dictionary to map each item to an ID
 item_to_id = {}
 current_id = 1

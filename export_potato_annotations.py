@@ -19,7 +19,7 @@ def get_annotations(ann_path):
   #print(ann_path, len(annotations))
 
   data = []
-
+  print(annotations)
   for annotation in annotations:
     id = annotation["id"]
     paira = annotation["displayed_text"].split("<div class=\"tuple\"><b>PAIR A</b><br/>")[1].split("<br/>")
